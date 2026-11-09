@@ -1,1 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PLAYAM 🎮</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      padding: 30px 20px;
+    }
+
+    h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .tagline {
+      font-size: 18px;
+      opacity: 0.8;
+      margin-bottom: 35px;
+    }
+
+    .card {
+      background: #222;
+      padding: 25px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .create {
+      background: #ff4f81;
+      color: white;
+    }
+
+    .join {
+      background: white;
+      color: #121212;
+    }
+
+    .small {
+      font-size: 14px;
+      opacity: 0.65;
+      margin-top: 25px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>PLAYAM 🎮</h1>
+
+    <p class="tagline">
+      Laugh. Confess. Play. Keep the secrets. 👀❤️
+    </p>
+
+    <div class="card">
+      <h2>Ready to play?</h2>
+
+      <button class="create" onclick="createRoom()">
+        🎉 CREATE A ROOM
+      </button>
+
+      <button class="join" onclick="joinRoom()">
+        🔗 JOIN A ROOM
+      </button>
+    </div>
+
+    <p class="small">
+      🔞 18+ Funny • Romantic • Secret-Revealing Party Game
+    </p>
+
+  </div>
+
+  <script>
+    function createRoom() {
+      alert("Create Room is coming next! 🎉");
+    }
+
+    function joinRoom() {
+      alert("Join Room is coming next! 🔗");
+    }
+  </script>
+
+</body>
+</html>
