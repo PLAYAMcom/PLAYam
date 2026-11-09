@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>PLAYAM 🎮</title>
 
   <style>
@@ -19,13 +20,13 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      text-align: center;
     }
 
     .container {
       width: 100%;
       max-width: 500px;
-      padding: 30px 20px;
+      padding: 25px 20px;
+      text-align: center;
     }
 
     h1 {
@@ -34,9 +35,8 @@
     }
 
     .tagline {
-      font-size: 18px;
       opacity: 0.8;
-      margin-bottom: 35px;
+      margin-bottom: 30px;
     }
 
     .card {
@@ -44,73 +44,445 @@
       padding: 25px;
       border-radius: 20px;
       margin-bottom: 20px;
+      text-align: left;
+    }
+
+    button,
+    input,
+    select {
+      width: 100%;
+      padding: 15px;
+      margin: 8px 0;
+      border-radius: 12px;
+      font-size: 16px;
+    }
+
+    input,
+    select {
+      border: 1px solid #555;
+      background: #111;
+      color: white;
     }
 
     button {
-      width: 100%;
-      padding: 16px;
-      margin: 8px 0;
       border: none;
-      border-radius: 12px;
-      font-size: 17px;
       font-weight: bold;
       cursor: pointer;
     }
 
-    .create {
+    .primary {
       background: #ff4f81;
       color: white;
     }
 
-    .join {
+    .secondary {
       background: white;
       color: #121212;
     }
 
+    .back {
+      background: transparent;
+      border: 1px solid #555;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
     .small {
-      font-size: 14px;
+      font-size: 13px;
       opacity: 0.65;
-      margin-top: 25px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    #message {
+      margin-top: 15px;
+      text-align: center;
+      min-height: 20px;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
 
-    <h1>PLAYAM 🎮</h1>
+<div class="container">
 
-    <p class="tagline">
-      Laugh. Confess. Play. Keep the secrets. 👀❤️
-    </p>
+  <h1>PLAYAM 🎮</h1>
 
-    <div class="card">
-      <h2>Ready to play?</h2>
+  <p class="tagline">
+    Laugh. Confess. Play. Keep the secrets. 👀❤️
+  </p>
 
-      <button class="create" onclick="createRoom()">
-        🎉 CREATE A ROOM
-      </button>
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="card">
 
-      <button class="join" onclick="joinRoom()">
-        🔗 JOIN A ROOM
-      </button>
-    </div>
+    <h2>Welcome to PLAYAM</h2>
+
+    <input
+      id="email"
+      type="email"
+      placeholder="Email address"
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+    >
+
+    <button class="primary" onclick="signUp()">
+      CREATE ACCOUNT
+    </button>
+
+    <button class="secondary" onclick="signIn()">
+      LOG IN
+    </button>
 
     <p class="small">
-      🔞 18+ Funny • Romantic • Secret-Revealing Party Game
+      Only email and password are required.
     </p>
 
   </div>
 
-  <script>
-    function createRoom() {
-      alert("Create Room is coming next! 🎉");
+
+  <!-- HOME SCREEN -->
+  <div id="homeScreen" class="card hidden">
+
+    <h2>Ready to play?</h2>
+
+    <button class="primary" onclick="showCreateRoom()">
+      🎉 CREATE A ROOM
+    </button>
+
+    <button class="secondary" onclick="showJoinRoom()">
+      🔗 JOIN A ROOM
+    </button>
+
+    <button class="back" onclick="signOut()">
+      LOG OUT
+    </button>
+
+  </div>
+
+
+  <!-- CREATE ROOM SCREEN -->
+  <div id="createScreen" class="card hidden">
+
+    <h2>Create a Room 🎉</h2>
+
+    <label>Your nickname</label>
+    <input
+      id="nickname"
+      type="text"
+      maxlength="20"
+      placeholder="Enter a nickname"
+    >
+
+    <label>Choose game</label>
+    <select id="game">
+      <option value="friendship-court">Friendship Court</option>
+      <option value="would-you-rather">Would You Rather?</option>
+      <option value="truth-or-dare">Truth or Dare</option>
+      <option value="mind-battle">Mind Battle</option>
+      <option value="secret-confessions">Secret Confessions</option>
+    </select>
+
+    <label>Difficulty</label>
+    <select id="level">
+      <option value="starter">Starter</option>
+      <option value="hard">Hard 🔞</option>
+      <option value="elite">Elite 🔞</option>
+      <option value="final-boss">Final Boss 🔞</option>
+    </select>
+
+    <label>Number of rounds</label>
+    <select id="rounds">
+      <option value="5">5 Rounds</option>
+      <option value="10" selected>10 Rounds</option>
+      <option value="15">15 Rounds</option>
+      <option value="20">20 Rounds</option>
+    </select>
+
+    <button class="primary" onclick="createRoom()">
+      CREATE PLAYAM ROOM
+    </button>
+
+    <button class="back" onclick="showHome()">
+      ← BACK
+    </button>
+
+  </div>
+
+
+  <!-- JOIN ROOM SCREEN -->
+  <div id="joinScreen" class="card hidden">
+
+    <h2>Join a Room 🔗</h2>
+
+    <input
+      id="joinCode"
+      type="text"
+      placeholder="Enter room code"
+    >
+
+    <input
+      id="joinNickname"
+      type="text"
+      maxlength="20"
+      placeholder="Your nickname"
+    >
+
+    <button class="primary" onclick="joinRoom()">
+      JOIN ROOM
+    </button>
+
+    <button class="back" onclick="showHome()">
+      ← BACK
+    </button>
+
+  </div>
+
+
+  <div id="message"></div>
+
+  <p class="small">
+    🔞 Hard, Elite and Final Boss contain mature content.
+  </p>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+  const SUPABASE_URL = "https://erjxmesxmmmaxivvmbsi.supabase.co/rest/v1/";
+
+  const SUPABASE_KEY = "sb_publishable_8GZmo3tsiGphFbgsCmbdgA_A7blmyc0";
+
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+  function hideAllScreens() {
+    document.getElementById("authScreen").classList.add("hidden");
+    document.getElementById("homeScreen").classList.add("hidden");
+    document.getElementById("createScreen").classList.add("hidden");
+    document.getElementById("joinScreen").classList.add("hidden");
+  }
+
+
+  function showMessage(text) {
+    document.getElementById("message").innerText = text;
+  }
+
+
+  function showHome() {
+    hideAllScreens();
+    document.getElementById("homeScreen").classList.remove("hidden");
+    showMessage("");
+  }
+
+
+  function showCreateRoom() {
+    hideAllScreens();
+    document.getElementById("createScreen").classList.remove("hidden");
+    showMessage("");
+  }
+
+
+  function showJoinRoom() {
+    hideAllScreens();
+    document.getElementById("joinScreen").classList.remove("hidden");
+    showMessage("");
+  }
+
+
+  async function signUp() {
+
+    const email = document.getElementById("email").value.trim();
+
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      showMessage("Please enter your email and password.");
+      return;
     }
 
-    function joinRoom() {
-      alert("Join Room is coming next! 🔗");
+    showMessage("Creating your account...");
+
+    const { error } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      showMessage(error.message);
+      return;
     }
-  </script>
+
+    showMessage(
+      "Account created! Check your email if confirmation is required."
+    );
+  }
+
+
+  async function signIn() {
+
+    const email = document.getElementById("email").value.trim();
+
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      showMessage("Please enter your email and password.");
+      return;
+    }
+
+    showMessage("Logging in...");
+
+    const { error } =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
+
+    showHome();
+  }
+
+
+  async function signOut() {
+
+    await supabaseClient.auth.signOut();
+
+    hideAllScreens();
+
+    document
+      .getElementById("authScreen")
+      .classList
+      .remove("hidden");
+
+    showMessage("You have logged out.");
+  }
+
+
+  async function createRoom() {
+
+    const nickname =
+      document.getElementById("nickname").value.trim();
+
+    const game =
+      document.getElementById("game").value;
+
+    const level =
+      document.getElementById("level").value;
+
+    const rounds =
+      Number(document.getElementById("rounds").value);
+
+    if (!nickname) {
+      showMessage("Please enter a nickname.");
+      return;
+    }
+
+    showMessage("Creating your PLAYAM room...");
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "create_playam_room",
+        {
+          p_nickname: nickname,
+          p_rounds: rounds,
+          p_game: game,
+          p_level_key: level
+        }
+      );
+
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
+
+    if (data && data.length > 0) {
+
+      showMessage(
+        "🎉 Room created! Your room code is: " +
+        data[0].room_code
+      );
+
+    } else {
+      showMessage("Room was created.");
+    }
+  }
+
+
+  async function joinRoom() {
+
+    const code =
+      document.getElementById("joinCode").value.trim();
+
+    const nickname =
+      document.getElementById("joinNickname").value.trim();
+
+    if (!code || !nickname) {
+      showMessage("Enter your room code and nickname.");
+      return;
+    }
+
+    showMessage("Joining room...");
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "join_playam_room",
+        {
+          p_code: code,
+          p_nickname: nickname
+        }
+      );
+
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      showMessage(
+        "🎉 You joined room: " + data[0].room_code
+      );
+    }
+  }
+
+
+  async function checkLogin() {
+
+    const {
+      data: {
+        session
+      }
+    } = await supabaseClient.auth.getSession();
+
+    if (session) {
+      showHome();
+    }
+  }
+
+
+  checkLogin();
+
+</script>
 
 </body>
 </html>
