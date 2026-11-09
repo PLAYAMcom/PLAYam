@@ -1,15 +1,13 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>PLAYAM 🎮</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -29,10 +27,7 @@
       text-align: center;
     }
 
-    h1 {
-      font-size: 48px;
-      margin-bottom: 10px;
-    }
+    h1 { font-size: 48px; margin-bottom: 10px; }
 
     .tagline {
       opacity: 0.8;
@@ -47,9 +42,7 @@
       text-align: left;
     }
 
-    button,
-    input,
-    select {
+    button, input, select {
       width: 100%;
       padding: 15px;
       margin: 8px 0;
@@ -57,8 +50,7 @@
       font-size: 16px;
     }
 
-    input,
-    select {
+    input, select {
       border: 1px solid #555;
       background: #111;
       color: white;
@@ -70,15 +62,13 @@
       cursor: pointer;
     }
 
-    .primary {
-      background: #ff4f81;
-      color: white;
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
-    .secondary {
-      background: white;
-      color: #121212;
-    }
+    .primary { background: #ff4f81; color: white; }
+    .secondary { background: white; color: #121212; }
 
     .back {
       background: transparent;
@@ -86,9 +76,7 @@
       color: white;
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
 
     .small {
       font-size: 13px;
@@ -107,11 +95,39 @@
       text-align: center;
       min-height: 20px;
     }
+
+    .room-code {
+      font-size: 38px;
+      color: #ff4f81;
+      text-align: center;
+      letter-spacing: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .player-item {
+      background: #333;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      overflow-wrap: anywhere;
+    }
+
+    .player-status {
+      color: #8df0a5;
+      white-space: nowrap;
+    }
+
+    .lobby-info {
+      text-align: center;
+      opacity: 0.8;
+    }
   </style>
 </head>
 
 <body>
-
 <div class="container">
 
   <h1>PLAYAM 🎮</h1>
@@ -125,32 +141,14 @@
 
     <h2>Welcome to PLAYAM</h2>
 
-    <input
-      id="email"
-      type="email"
-      placeholder="Email address"
-    >
+    <input id="email" type="email" placeholder="Email address">
+    <input id="password" type="password" placeholder="Password">
 
-    <input
-      id="password"
-      type="password"
-      placeholder="Password"
-    >
+    <button class="primary" onclick="signUp()">CREATE ACCOUNT</button>
+    <button class="secondary" onclick="signIn()">LOG IN</button>
 
-    <button class="primary" onclick="signUp()">
-      CREATE ACCOUNT
-    </button>
-
-    <button class="secondary" onclick="signIn()">
-      LOG IN
-    </button>
-
-    <p class="small">
-      Only email and password are required.
-    </p>
-
+    <p class="small">Only email and password are required.</p>
   </div>
-
 
   <!-- HOME SCREEN -->
   <div id="homeScreen" class="card hidden">
@@ -165,12 +163,8 @@
       🔗 JOIN A ROOM
     </button>
 
-    <button class="back" onclick="signOut()">
-      LOG OUT
-    </button>
-
+    <button class="back" onclick="signOut()">LOG OUT</button>
   </div>
-
 
   <!-- CREATE ROOM SCREEN -->
   <div id="createScreen" class="card hidden">
@@ -178,12 +172,8 @@
     <h2>Create a Room 🎉</h2>
 
     <label>Your nickname</label>
-    <input
-      id="nickname"
-      type="text"
-      maxlength="20"
-      placeholder="Enter a nickname"
-    >
+    <input id="nickname" type="text" maxlength="20"
+      placeholder="Enter a nickname">
 
     <label>Choose game</label>
     <select id="game">
@@ -199,7 +189,7 @@
       <option value="starter">Starter</option>
       <option value="hard">Hard 🔞</option>
       <option value="elite">Elite 🔞</option>
-      <option value="final-boss">Final Boss 🔞</option>
+      <option value="final_boss">Final Boss 🔞</option>
     </select>
 
     <label>Number of rounds</label>
@@ -214,41 +204,61 @@
       CREATE PLAYAM ROOM
     </button>
 
-    <button class="back" onclick="showHome()">
-      ← BACK
-    </button>
-
+    <button class="back" onclick="showHome()">← BACK</button>
   </div>
-
 
   <!-- JOIN ROOM SCREEN -->
   <div id="joinScreen" class="card hidden">
 
     <h2>Join a Room 🔗</h2>
 
-    <input
-      id="joinCode"
-      type="text"
-      placeholder="Enter room code"
-    >
+    <input id="joinCode" type="text" placeholder="Enter room code">
 
-    <input
-      id="joinNickname"
-      type="text"
-      maxlength="20"
-      placeholder="Your nickname"
-    >
+    <input id="joinNickname" type="text" maxlength="20"
+      placeholder="Your nickname">
 
-    <button class="primary" onclick="joinRoom()">
-      JOIN ROOM
-    </button>
+    <button class="primary" onclick="joinRoom()">JOIN ROOM</button>
 
-    <button class="back" onclick="showHome()">
-      ← BACK
-    </button>
-
+    <button class="back" onclick="showHome()">← BACK</button>
   </div>
 
+  <!-- PLAYAM LOBBY SCREEN -->
+  <div id="lobbyScreen" class="card hidden">
+
+    <h2>🎮 PLAYAM LOBBY</h2>
+
+    <p class="lobby-info">Your Room Code</p>
+    <div id="lobbyRoomCode" class="room-code">------</div>
+
+    <button class="secondary" onclick="copyRoomCode()">
+      COPY ROOM CODE
+    </button>
+
+    <p class="lobby-info">
+      Share this code with your friends.
+    </p>
+
+    <hr>
+
+    <h3>Players in the Room</h3>
+    <div id="lobbyPlayers">Loading players...</div>
+
+    <p id="lobbyStatus" class="lobby-info">Waiting for players...</p>
+    <p id="lobbyRound" class="lobby-info"></p>
+
+    <button id="readyButton" class="primary" onclick="toggleReady()">
+      I'M READY
+    </button>
+
+    <button id="startButton" class="secondary hidden"
+      onclick="startGame()">
+      START GAME
+    </button>
+
+    <button class="back" onclick="leaveLobbyView()">
+      BACK TO HOME
+    </button>
+  </div>
 
   <div id="message"></div>
 
@@ -258,40 +268,46 @@
 
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+  const SUPABASE_URL =
+    "https://erjxmesxmmmaxivvmbsi.supabase.co";
 
-  const SUPABASE_URL = "https://erjxmesxmmmaxivvmbsi.supabase.co";
-
-  const SUPABASE_KEY = "sb_publishable_8GZmo3tsiGphFbgsCmbdgA_A7blmyc0";
+  const SUPABASE_KEY =
+    "sb_publishable_8GZmo3tsiGphFbgsCmbdgA_A7blmyc0";
 
   const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
 
+  let currentRoomCode = "";
+  let currentPlayerId = "";
+  let currentNickname = "";
+  let currentPlayerReady = false;
+  let currentPlayerIsHost = false;
+  let lobbyRefreshTimer = null;
+  let lobbyLoading = false;
 
   function hideAllScreens() {
     document.getElementById("authScreen").classList.add("hidden");
     document.getElementById("homeScreen").classList.add("hidden");
     document.getElementById("createScreen").classList.add("hidden");
     document.getElementById("joinScreen").classList.add("hidden");
+    document.getElementById("lobbyScreen").classList.add("hidden");
   }
-
 
   function showMessage(text) {
     document.getElementById("message").innerText = text;
   }
 
-
   function showHome() {
+    stopLobbyRefresh();
     hideAllScreens();
     document.getElementById("homeScreen").classList.remove("hidden");
     showMessage("");
   }
-
 
   function showCreateRoom() {
     hideAllScreens();
@@ -299,18 +315,21 @@
     showMessage("");
   }
 
-
   function showJoinRoom() {
     hideAllScreens();
     document.getElementById("joinScreen").classList.remove("hidden");
     showMessage("");
   }
 
+  function stopLobbyRefresh() {
+    if (lobbyRefreshTimer) {
+      clearInterval(lobbyRefreshTimer);
+      lobbyRefreshTimer = null;
+    }
+  }
 
   async function signUp() {
-
     const email = document.getElementById("email").value.trim();
-
     const password = document.getElementById("password").value;
 
     if (!email || !password) {
@@ -320,7 +339,7 @@
 
     showMessage("Creating your account...");
 
-    const { error } = await supabaseClient.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
       email: email,
       password: password
     });
@@ -330,16 +349,18 @@
       return;
     }
 
-    showMessage(
-      "Account created! Check your email if confirmation is required."
-    );
+    if (data.session) {
+      showHome();
+      showMessage("🎉 Account created! Welcome to PLAYAM.");
+    } else {
+      showMessage(
+        "Account created. Please check your email if confirmation is required."
+      );
+    }
   }
 
-
   async function signIn() {
-
     const email = document.getElementById("email").value.trim();
-
     const password = document.getElementById("password").value;
 
     if (!email || !password) {
@@ -363,24 +384,20 @@
     showHome();
   }
 
-
   async function signOut() {
-
+    stopLobbyRefresh();
     await supabaseClient.auth.signOut();
 
+    currentRoomCode = "";
+    currentPlayerId = "";
+    currentNickname = "";
+
     hideAllScreens();
-
-    document
-      .getElementById("authScreen")
-      .classList
-      .remove("hidden");
-
+    document.getElementById("authScreen").classList.remove("hidden");
     showMessage("You have logged out.");
   }
 
-
   async function createRoom() {
-
     const nickname =
       document.getElementById("nickname").value.trim();
 
@@ -401,36 +418,31 @@
     showMessage("Creating your PLAYAM room...");
 
     const { data, error } =
-      await supabaseClient.rpc(
-        "create_playam_room",
-        {
-          p_nickname: nickname,
-          p_rounds: rounds,
-          p_game: game,
-          p_level_key: level
-        }
-      );
+      await supabaseClient.rpc("create_playam_room", {
+        p_nickname: nickname,
+        p_rounds: rounds,
+        p_game: game,
+        p_level_key: level
+      });
 
     if (error) {
       showMessage(error.message);
       return;
     }
 
-    if (data && data.length > 0) {
-
-      showMessage(
-        "🎉 Room created! Your room code is: " +
-        data[0].room_code
-      );
-
-    } else {
-      showMessage("Room was created.");
+    if (!data || !data.length || !data[0].room_code) {
+      showMessage("Room was created, but its details were not returned.");
+      return;
     }
+
+    currentRoomCode = data[0].room_code;
+    currentPlayerId = data[0].player_id;
+    currentNickname = nickname;
+
+    openLobby();
   }
 
-
   async function joinRoom() {
-
     const code =
       document.getElementById("joinCode").value.trim();
 
@@ -445,33 +457,190 @@
     showMessage("Joining room...");
 
     const { data, error } =
-      await supabaseClient.rpc(
-        "join_playam_room",
-        {
-          p_code: code,
-          p_nickname: nickname
-        }
-      );
+      await supabaseClient.rpc("join_playam_room", {
+        p_code: code,
+        p_nickname: nickname
+      });
 
     if (error) {
       showMessage(error.message);
       return;
     }
 
-    if (data && data.length > 0) {
-      showMessage(
-        "🎉 You joined room: " + data[0].room_code
-      );
+    if (!data || !data.length || !data[0].room_code) {
+      showMessage("You joined, but room details were not returned.");
+      return;
+    }
+
+    currentRoomCode = data[0].room_code;
+    currentPlayerId = data[0].player_id;
+    currentNickname = nickname;
+
+    openLobby();
+  }
+
+  function openLobby() {
+    stopLobbyRefresh();
+    hideAllScreens();
+
+    document.getElementById("lobbyScreen").classList.remove("hidden");
+    document.getElementById("lobbyRoomCode").innerText = currentRoomCode;
+
+    showMessage("Welcome to your PLAYAM lobby!");
+
+    loadLobby();
+
+    lobbyRefreshTimer = setInterval(loadLobby, 3000);
+  }
+
+  async function loadLobby() {
+    if (!currentRoomCode || lobbyLoading) return;
+
+    lobbyLoading = true;
+
+    const { data, error } =
+      await supabaseClient.rpc("get_playam_lobby", {
+        p_code: currentRoomCode
+      });
+
+    lobbyLoading = false;
+
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      showMessage("No players found in this room.");
+      return;
+    }
+
+    const playersBox = document.getElementById("lobbyPlayers");
+    playersBox.innerHTML = "";
+
+    currentPlayerReady = false;
+    currentPlayerIsHost = false;
+
+    data.forEach(function(player) {
+      const item = document.createElement("div");
+      item.className = "player-item";
+
+      const name = document.createElement("span");
+      name.textContent = player.nickname;
+
+      if (player.player_id === currentPlayerId) {
+        name.textContent += " (You)";
+        currentPlayerReady = player.is_ready;
+        currentPlayerIsHost = player.is_host;
+      }
+
+      if (player.is_host) {
+        name.textContent += " 👑";
+      }
+
+      const status = document.createElement("span");
+      status.className = "player-status";
+      status.textContent = player.is_ready ? "READY ✓" : "Not ready";
+
+      item.appendChild(name);
+      item.appendChild(status);
+      playersBox.appendChild(item);
+    });
+
+    document.getElementById("lobbyRoomCode").innerText =
+      data[0].room_code;
+
+    document.getElementById("lobbyStatus").innerText =
+      "Game status: " + data[0].game_status;
+
+    document.getElementById("lobbyRound").innerText =
+      "Current round: " + data[0].current_round +
+      " | Total rounds: " + data[0].total_rounds;
+
+    const readyButton = document.getElementById("readyButton");
+    readyButton.innerText =
+      currentPlayerReady ? "CANCEL READY" : "I'M READY";
+
+    const startButton = document.getElementById("startButton");
+
+    if (currentPlayerIsHost && data[0].game_status === "waiting") {
+      startButton.classList.remove("hidden");
+    } else {
+      startButton.classList.add("hidden");
+    }
+
+    if (data[0].game_status !== "waiting") {
+      readyButton.disabled = true;
+      stopLobbyRefresh();
+    } else {
+      readyButton.disabled = false;
     }
   }
 
+  async function toggleReady() {
+    const newReadyState = !currentPlayerReady;
+
+    showMessage("Updating your readiness...");
+
+    const { error } =
+      await supabaseClient.rpc("set_playam_ready", {
+        p_ready: newReadyState
+      });
+
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
+
+    showMessage(
+      newReadyState ? "You are ready!" : "You are no longer ready."
+    );
+
+    await loadLobby();
+  }
+
+  async function startGame() {
+    if (!currentPlayerIsHost) {
+      showMessage("Only the room host can start the game.");
+      return;
+    }
+
+    showMessage("Starting PLAYAM game...");
+
+    const { error } =
+      await supabaseClient.rpc("start_playam_game");
+
+    if (error) {
+      showMessage(error.message);
+      return;
+    }
+
+    showMessage("🎉 Game started! The gameplay screen is our next step.");
+    await loadLobby();
+  }
+
+  async function copyRoomCode() {
+    try {
+      await navigator.clipboard.writeText(currentRoomCode);
+      showMessage("Room code copied!");
+    } catch (error) {
+      showMessage("Your room code is: " + currentRoomCode);
+    }
+  }
+
+  function leaveLobbyView() {
+    stopLobbyRefresh();
+
+    currentRoomCode = "";
+    currentPlayerId = "";
+    currentNickname = "";
+
+    showHome();
+  }
 
   async function checkLogin() {
-
     const {
-      data: {
-        session
-      }
+      data: { session }
     } = await supabaseClient.auth.getSession();
 
     if (session) {
@@ -479,9 +648,7 @@
     }
   }
 
-
   checkLogin();
-
 </script>
 
 </body>
