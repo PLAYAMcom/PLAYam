@@ -104,6 +104,29 @@ input,select,textarea{background:#15111d;border-color:#4a3d56;color:var(--text)}
 /* Dedicated PLAYAM video viewing area */
 .feed-video-stage{background:linear-gradient(135deg,#261b35,#171321 75%);border:1px solid rgba(198,161,91,.32);border-radius:22px;padding:18px;margin:0 0 20px;overflow:hidden}.feed-video-stage-head{display:flex;align-items:center;justify-content:space-between;gap:15px}.feed-video-kicker{font-size:10px;font-weight:900;letter-spacing:2px;color:#C6A15B}.feed-video-stage h3{margin:7px 0;font-size:19px}.feed-video-stage p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}.feed-video-icon{width:44px;height:44px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:#512B81;color:white;border:1px solid rgba(198,161,91,.45)}.feed-video-empty{margin-top:15px;min-height:155px;border-radius:16px;background:radial-gradient(ellipse at center,rgba(81,43,129,.28),transparent 70%),#100d17;border:1px dashed rgba(198,161,91,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}.feed-video-empty span{font-size:30px}.feed-video-empty strong{font-size:14px}.feed-video-empty small{font-size:12px;color:var(--muted)}.feed-post-video{display:block;width:100%;max-height:560px;aspect-ratio:16/9;object-fit:contain;background:#08070c;border-radius:16px;margin:14px 0;border:1px solid var(--line)}
 @media(max-width:760px){.feed-video-stage{padding:15px;border-radius:18px}.feed-video-empty{min-height:135px}.feed-post-video{max-height:420px}}
+
+/* PLAYAM full-screen vertical video experience */
+.videos-screen{position:fixed;inset:0;z-index:1000;background:#08070c;color:#fff;display:flex;flex-direction:column;overflow:hidden}
+.videos-topbar{height:58px;flex:0 0 58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:rgba(12,10,16,.96);border-bottom:1px solid rgba(198,161,91,.18);z-index:3}
+.videos-topbar>div{display:flex;align-items:center;gap:9px;font-size:17px;letter-spacing:1px}.videos-topbar>div span{font-size:10px;color:#d9b878;letter-spacing:2px}
+.videos-back,.videos-refresh{background:transparent;color:#fff;font-size:23px;padding:7px 12px}
+.videos-scroller{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-snap-type:y mandatory;scrollbar-width:none}
+.videos-scroller::-webkit-scrollbar{display:none}
+.video-slide{height:100%;min-height:calc(100dvh - 90px);position:relative;scroll-snap-align:start;scroll-snap-stop:always;background:#09070d;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.video-slide video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#09070d}
+.video-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.82),transparent 37%,rgba(0,0,0,.16) 75%,rgba(0,0,0,.22))}
+.video-info{position:absolute;left:18px;right:82px;bottom:25px;z-index:2;text-shadow:0 1px 5px #000}
+.video-creator{font-weight:800;font-size:15px;margin-bottom:9px}.video-caption{font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.video-side-actions{position:absolute;right:13px;bottom:75px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:17px}
+.video-side-actions button{width:52px;height:52px;border-radius:50%;padding:0;background:rgba(15,12,20,.68);border:1px solid rgba(255,255,255,.22);color:#fff;font-size:21px;backdrop-filter:blur(8px)}
+.video-side-actions small{display:block;font-size:11px;text-align:center;margin-top:3px;text-shadow:0 1px 4px #000}
+.video-comments{position:absolute;z-index:4;left:10px;right:10px;bottom:10px;max-height:48%;overflow:auto;padding:14px;background:rgba(20,16,26,.97);border:1px solid var(--line);border-radius:16px}
+.video-comments input{margin:8px 0;background:#100d16}
+.videos-empty{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;background:radial-gradient(ellipse at center,rgba(81,43,129,.32),transparent 65%)}
+.videos-empty>div{font-size:52px;color:#d9b878}.videos-empty h2{font-size:22px;margin:15px 0 8px}.videos-empty p{max-width:320px;color:#b9b0c5;font-size:14px;line-height:1.6}
+.videos-bottom-hint{position:absolute;bottom:5px;left:0;right:0;text-align:center;font-size:10px;color:rgba(255,255,255,.58);pointer-events:none;z-index:2}
+@media(min-width:761px){.videos-screen{left:245px}.video-slide{max-width:520px;width:100%;margin:0 auto;min-height:100%;border-left:1px solid rgba(198,161,91,.12);border-right:1px solid rgba(198,161,91,.12)}.videos-topbar{justify-content:center;position:relative}.videos-back{position:absolute;left:12px}.videos-refresh{position:absolute;right:12px}}
+@media(max-width:760px){.videos-screen{inset:0}.videos-topbar{height:52px;flex-basis:52px}.video-slide{height:calc(100dvh - 90px);min-height:calc(100dvh - 90px)}.video-info{bottom:30px}.video-side-actions{right:9px;bottom:76px}}
 </style>
 </head>
 <body>
@@ -126,6 +149,7 @@ input,select,textarea{background:#15111d;border-color:#4a3d56;color:var(--text)}
   <div class="side-label">MAIN MENU</div>
   <button class="navbtn active" id="navHome" onclick="showHome()">🏠 Home</button>
   <button class="navbtn" id="navFeed" onclick="showFeed()">📰 Feed</button>
+  <button class="navbtn" id="navVideos" onclick="showVideos()">▶ Videos</button>
   <button class="navbtn" id="navProfile" onclick="showProfile()">👤 Profile</button>
   <button class="navbtn" onclick="showSoloSetup()">🎯 Play Solo</button>
   <button class="navbtn" onclick="showFindPlayer()">👥 Find Player</button>
@@ -238,10 +262,15 @@ input,select,textarea{background:#15111d;border-color:#4a3d56;color:var(--text)}
      </div>
      <button id="feedPostButton" class="primary" style="width:100%;margin-top:10px" onclick="createFeedPost()">POST TO FEED</button>
     </div>
-    <section id="feedVideoStage" class="feed-video-stage" aria-label="PLAYAM video area"><div class="feed-video-stage-head"><div><span class="feed-video-kicker">PLAYAM VIDEO</span><h3>Watch what the community is sharing</h3><p>Gameplay highlights, creator clips and moments from the PLAYAM community.</p></div><span class="feed-video-icon">▶</span></div><div class="feed-video-empty"><span>🎬</span><strong>Your video space</strong><small>Video posts will appear here as they become available.</small></div></section>
     <div id="feedStatus" class="small"></div>
     <div id="feedList" aria-live="polite"></div>
    </div>
+  </section>
+
+  <section id="videosScreen" class="videos-screen hidden" aria-label="PLAYAM vertical videos">
+   <header class="videos-topbar"><button class="videos-back" onclick="showFeed()" aria-label="Back to Feed">←</button><div><strong>PLAYAM</strong><span>VIDEOS</span></div><button class="videos-refresh" onclick="loadVideos()">↻</button></header>
+   <div id="videosScroller" class="videos-scroller"><div class="videos-empty"><div>▶</div><h2>Your video feed starts here</h2><p>Vertical community videos will appear here when creators can securely upload them.</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div></div>
+   <div class="videos-bottom-hint">Swipe up for the next video</div>
   </section>
 
   <section id="findPlayerScreen" class="screen-card hidden">
@@ -407,7 +436,7 @@ let selectedVotePlayerId="",lobbyRefreshTimer=null,lobbyLoading=false;
 let gameRefreshTimer=null,gameTimerInterval=null,currentRoundEndsAt=null,answerSubmitted=false;
 let soloQuestions=[],soloAnswers=[],soloQuestionIndex=0,soloDifficulty="starter",soloLoading=false;
 
-const screenIds=["homeScreen","feedScreen","findPlayerScreen","settingsScreen","soloSetupScreen","soloGameScreen","soloResultsScreen","createScreen","joinScreen","lobbyScreen","gameScreen","resultsScreen"];
+const screenIds=["homeScreen","feedScreen","videosScreen","findPlayerScreen","settingsScreen","soloSetupScreen","soloGameScreen","soloResultsScreen","createScreen","joinScreen","lobbyScreen","gameScreen","resultsScreen"];
 
 function showMessage(t){document.getElementById("message").innerText=t||""}
 function hideScreens(){screenIds.forEach(id=>document.getElementById(id).classList.add("hidden"))}
@@ -433,7 +462,8 @@ async function saveProfile(){
  status.innerText=error?"Unable to save: "+error.message:"✓ Profile saved!";
  if(!error)await loadProfile();
 }
-function showFeed(){stopLobbyRefresh();stopGameRefresh();showScreen("feedScreen","navFeed");loadFeed()}\nfunction setFeedTab(tab,button){currentFeedTab=tab;document.querySelectorAll(".feed-tab").forEach(b=>b.classList.remove("active"));button.classList.add("active");loadFeed()}
+function showFeed(){stopLobbyRefresh();stopGameRefresh();showScreen("feedScreen","navFeed");loadFeed()}
+function showVideos(){stopLobbyRefresh();stopGameRefresh();showScreen("videosScreen","navVideos");loadVideos()}\nfunction setFeedTab(tab,button){currentFeedTab=tab;document.querySelectorAll(".feed-tab").forEach(b=>b.classList.remove("active"));button.classList.add("active");loadFeed()}
 function showFindPlayer(){stopLobbyRefresh();stopGameRefresh();showScreen("findPlayerScreen")}
 function showSettings(){showScreen("settingsScreen")}
 function showCreateRoom(){showScreen("createScreen")}
@@ -486,6 +516,57 @@ async function loadFeed(){
  (reactionRows||[]).forEach(r=>{reactionMap[r.post_id]=(reactionMap[r.post_id]||0)+1;if(user&&r.user_id===user.id)liked.add(r.post_id)});
  (commentRows||[]).forEach(c=>commentMap[c.post_id]=(commentMap[c.post_id]||0)+1);
  list.innerHTML=data.map((p,i)=>{const profile=profileMap[p.user_id]||{};const display=profile.display_name||"PLAYAM Player";const handle=profile.username?"@"+profile.username:"@playam-player";const avatar=profile.avatar_url?'<img class="avatar" src="'+escapeFeedText(profile.avatar_url)+'" alt="" style="object-fit:cover">':'<div class="avatar">'+escapeFeedText((display[0]||"P").toUpperCase())+'</div>';const media=p.media_type==="image"&&p.media_url?'<img class="feed-media" src="'+escapeFeedText(p.media_url)+'" alt="Post photo" loading="lazy">':p.media_type==="video"&&p.media_url?'<video class="feed-post-video" src="'+escapeFeedText(p.media_url)+'" controls playsinline preload="metadata">Your browser does not support video playback.</video>':"";return '<article class="feed-post"><div class="feed-post-header"><div class="feed-author-wrap">'+avatar+'<div><div class="feed-author">'+escapeFeedText(display)+'</div><div class="feed-handle">'+escapeFeedText(handle)+'</div></div></div><div class="feed-time">'+escapeFeedText(formatFeedTime(p.created_at))+'</div></div><div class="feed-content">'+escapeFeedText(p.content)+'</div>'+media+'<div class="feed-actions"><button class="feed-action" type="button" onclick="toggleFeedLike(\''+p.id+'\')">'+(liked.has(p.id)?"♥":"♡")+" "+(reactionMap[p.id]||0)+'</button><button class="feed-action" type="button" onclick="openFeedComments(\''+p.id+'\')">💬 '+(commentMap[p.id]||0)+'</button><button class="feed-action" type="button" onclick="shareFeedPost()">↗ Share</button></div><div id="comments-'+p.id+'" class="hidden" style="margin-top:12px"></div></article>'}).join("");
+}
+async function loadVideos(){
+ const scroller=document.getElementById("videosScroller");if(!scroller)return;
+ scroller.innerHTML='<div class="videos-empty"><div>…</div><h2>Loading videos</h2><p>Finding the latest PLAYAM clips.</p></div>';
+ const {data,error}=await supabaseClient.from("feed_posts").select("id,content,created_at,user_id,media_url,media_type").eq("media_type","video").not("media_url","is",null).order("created_at",{ascending:false}).limit(40);
+ if(error){scroller.innerHTML='<div class="videos-empty"><h2>Videos are unavailable</h2><p>'+escapeFeedText(error.message)+'</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div>';return}
+ if(!data||!data.length){scroller.innerHTML='<div class="videos-empty"><div>▶</div><h2>Your video feed starts here</h2><p>There are no published videos yet. The full-screen player is ready for approved video posts once secure video uploads are connected.</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div>';return}
+ const ids=[...new Set(data.map(p=>p.user_id).filter(Boolean))];let profiles={};
+ if(ids.length){const {data:rows}=await supabaseClient.from("playam_profiles").select("user_id,display_name,username").in("user_id",ids);(rows||[]).forEach(p=>profiles[p.user_id]=p)}
+ const [{data:reactions},{data:comments},{data:{user}}]=await Promise.all([
+  supabaseClient.from("feed_reactions").select("post_id,user_id"),
+  supabaseClient.from("feed_comments").select("id,post_id"),
+  supabaseClient.auth.getUser()
+ ]);
+ const counts={},commentCounts={},liked=new Set();
+ (reactions||[]).forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1;if(user&&r.user_id===user.id)liked.add(r.post_id)});
+ (comments||[]).forEach(c=>commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1);
+ scroller.innerHTML=data.map(p=>{
+  const profile=profiles[p.user_id]||{},name=profile.display_name||"PLAYAM Player",handle=profile.username?"@"+profile.username:"@playam-player";
+  return '<article class="video-slide" data-video-slide><video src="'+escapeFeedText(p.media_url)+'" playsinline muted loop preload="metadata" controls aria-label="PLAYAM community video"></video><div class="video-shade"></div><div class="video-info"><div class="video-creator">'+escapeFeedText(name)+' <span style="font-weight:400;color:#e3d5b5">'+escapeFeedText(handle)+'</span></div><div class="video-caption">'+escapeFeedText(p.content||"")+'</div></div><div class="video-side-actions"><div><button type="button" aria-label="Like video" onclick="toggleVideoLike(\''+p.id+'\')">'+(liked.has(p.id)?"♥":"♡")+'</button><small>'+(counts[p.id]||0)+'</small></div><div><button type="button" aria-label="Comments" onclick="openVideoComments(\''+p.id+'\')">💬</button><small>'+(commentCounts[p.id]||0)+'</small></div><div><button type="button" aria-label="Share video" onclick="shareVideo(\''+p.id+'\')">↗</button><small>Share</small></div></div><div id="video-comments-'+p.id+'" class="video-comments hidden"></div></article>';
+ }).join("");
+ const videos=[...scroller.querySelectorAll("video")];
+ if("IntersectionObserver" in window){
+  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{const v=entry.target;if(entry.isIntersecting&&entry.intersectionRatio>.65){videos.forEach(other=>{if(other!==v)other.pause()});v.play().catch(()=>{})}else v.pause()}),{root:scroller,threshold:[.2,.65,.9]});
+  videos.forEach(v=>observer.observe(v));
+ }
+}
+async function toggleVideoLike(postId){
+ const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to like videos.");return}
+ const {data:existing,error}=await supabaseClient.from("feed_reactions").select("post_id").eq("post_id",postId).eq("user_id",user.id).maybeSingle();
+ if(error){showMessage(error.message);return}
+ const result=existing?await supabaseClient.from("feed_reactions").delete().eq("post_id",postId).eq("user_id",user.id):await supabaseClient.from("feed_reactions").insert({post_id:postId,user_id:user.id});
+ if(result.error){showMessage(result.error.message);return}await loadVideos();
+}
+async function openVideoComments(postId){
+ const box=document.getElementById("video-comments-"+postId);if(!box)return;
+ if(!box.classList.contains("hidden")){box.classList.add("hidden");return}
+ box.classList.remove("hidden");box.innerHTML='<div class="small">Loading comments…</div>';
+ const {data,error}=await supabaseClient.from("feed_comments").select("id,content,created_at").eq("post_id",postId).order("created_at",{ascending:true}).limit(60);
+ if(error){box.innerHTML='<div class="small">'+escapeFeedText(error.message)+'</div>';return}
+ box.innerHTML='<button class="videos-refresh" style="float:right" onclick="document.getElementById(\'video-comments-'+postId+'\').classList.add(\'hidden\')">✕</button>'+(data||[]).map(c=>'<div style="padding:7px 0;border-bottom:1px solid #393040;font-size:13px">'+escapeFeedText(c.content)+'</div>').join("")+'<div style="display:flex;gap:7px"><input id="video-comment-input-'+postId+'" maxlength="1000" placeholder="Add a comment…"><button class="primary" onclick="addVideoComment(\''+postId+'\')">Send</button></div>';
+}
+async function addVideoComment(postId){
+ const input=document.getElementById("video-comment-input-"+postId),content=input?.value.trim();if(!content)return;
+ const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to comment.");return}
+ const {error}=await supabaseClient.from("feed_comments").insert({post_id:postId,user_id:user.id,content});
+ if(error){showMessage(error.message);return}await loadVideos();
+}
+async function shareVideo(postId){
+ const url=location.href+"#video-"+postId;
+ try{if(navigator.share)await navigator.share({title:"PLAYAM Video",url});else if(navigator.clipboard)await navigator.clipboard.writeText(url)}catch(e){}
 }
 async function toggleFeedLike(postId){
  const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to like posts.");return}
