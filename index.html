@@ -828,7 +828,7 @@ async function toggleReady(){
 async function startGame(){
  if(!currentPlayerIsHost){showMessage("Only the room host can start the game.");return}
  showMessage("Starting PLAYAM game...");
- const {error}=await supabaseClient.rpc("start_playam_game");
+ const {error}=await supabaseClient.rpc("start_playam_game",{p_code:currentRoomCode});
  if(error){showMessage(error.message);return}
  showMessage("PLAYAM has started!");stopLobbyRefresh();setTimeout(openGame,500);
 }
