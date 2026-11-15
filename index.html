@@ -413,8 +413,39 @@ async function loadFeed(){
  if(error){list.innerHTML='<div class="feed-empty">The Feed is not available yet. '+escapeFeedText(error.message)+'</div>';return}
  if(!data||!data.length){list.innerHTML='<div class="feed-empty">No posts yet. Be the first to post on PLAYAM! 🎉</div>';return}
  if(currentFeedTab==="following"){list.innerHTML='<div class="feed-empty">Following will appear here after creator profiles and follows are connected.</div>';return}
- list.innerHTML=data.map((p,i)=>'<article class="feed-post"><div class="feed-post-header"><div class="feed-author-wrap"><div class="avatar">'+(i%2?"🎮":"P")+'</div><div><div class="feed-author">PLAYAM Player</div><div class="feed-handle">@playam-player</div></div></div><div class="feed-time">'+escapeFeedText(formatFeedTime(p.created_at))+'</div></div><div class="feed-content">'+escapeFeedText(p.content)+'</div><div class="feed-actions"><button class="feed-action" type="button" disabled>♡ Like</button><button class="feed-action" type="button" disabled>💬 Comment</button><button class="feed-action" type="button" disabled>↗ Share</button></div></article>').join("");
+ const [{data:reactionRows,error:reactionError},{data:commentRows,error:commentError},{data:{user}}]=await Promise.all([
+  supabaseClient.from("feed_reactions").select("post_id,user_id"),
+  supabaseClient.from("feed_comments").select("id,post_id"),
+  supabaseClient.auth.getUser()
+ ]);
+ if(reactionError||commentError){status.innerText="Some social activity could not load yet."}
+ const reactionMap={},commentMap={},liked=new Set();
+ (reactionRows||[]).forEach(r=>{reactionMap[r.post_id]=(reactionMap[r.post_id]||0)+1;if(user&&r.user_id===user.id)liked.add(r.post_id)});
+ (commentRows||[]).forEach(c=>commentMap[c.post_id]=(commentMap[c.post_id]||0)+1);
+ list.innerHTML=data.map((p,i)=>'<article class="feed-post"><div class="feed-post-header"><div class="feed-author-wrap"><div class="avatar">'+(i%2?"🎮":"P")+'</div><div><div class="feed-author">PLAYAM Player</div><div class="feed-handle">@playam-player</div></div></div><div class="feed-time">'+escapeFeedText(formatFeedTime(p.created_at))+'</div></div><div class="feed-content">'+escapeFeedText(p.content)+'</div><div class="feed-actions"><button class="feed-action" type="button" onclick="toggleFeedLike(\''+p.id+'\')">'+(liked.has(p.id)?"♥":"♡")+" "+(reactionMap[p.id]||0)+'</button><button class="feed-action" type="button" onclick="openFeedComments(\''+p.id+'\')">💬 '+(commentMap[p.id]||0)+'</button><button class="feed-action" type="button" onclick="shareFeedPost()">↗ Share</button></div><div id="comments-'+p.id+'" class="hidden" style="margin-top:12px"></div></article>').join("");
 }
+async function toggleFeedLike(postId){
+ const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to like posts.");return}
+ const {data:existing,error:checkError}=await supabaseClient.from("feed_reactions").select("post_id").eq("post_id",postId).eq("user_id",user.id).maybeSingle();
+ if(checkError){showMessage(checkError.message);return}
+ const result=existing?await supabaseClient.from("feed_reactions").delete().eq("post_id",postId).eq("user_id",user.id):await supabaseClient.from("feed_reactions").insert({post_id:postId,user_id:user.id});
+ if(result.error){showMessage(result.error.message);return}await loadFeed();
+}
+async function openFeedComments(postId){
+ const box=document.getElementById("comments-"+postId);if(!box)return;
+ if(!box.classList.contains("hidden")){box.classList.add("hidden");return}
+ box.classList.remove("hidden");box.innerHTML='<div class="small">Loading comments...</div>';
+ const {data,error}=await supabaseClient.from("feed_comments").select("id,content,created_at").eq("post_id",postId).order("created_at",{ascending:true}).limit(100);
+ if(error){box.innerHTML='<div class="small">'+escapeFeedText(error.message)+'</div>';return}
+ box.innerHTML=(data||[]).map(c=>'<div class="small" style="padding:8px 0;border-top:1px solid #303047"><strong>PLAYAM Player</strong><br>'+escapeFeedText(c.content)+'</div>').join("")+'<div style="display:flex;gap:8px;margin-top:10px"><input id="comment-input-'+postId+'" maxlength="1000" placeholder="Write a comment..."><button class="secondary" type="button" onclick="addFeedComment(\''+postId+'\')">Send</button></div>';
+}
+async function addFeedComment(postId){
+ const input=document.getElementById("comment-input-"+postId),content=input?.value.trim();if(!content)return;
+ const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to comment.");return}
+ const {error}=await supabaseClient.from("feed_comments").insert({post_id:postId,user_id:user.id,content});
+ if(error){showMessage(error.message);return}await loadFeed();setTimeout(()=>openFeedComments(postId),0);
+}
+async function shareFeedPost(){try{await navigator.share?.({title:"PLAYAM Feed",text:"Check out PLAYAM!"});}catch(e){}}
 async function createFeedPost(){
  const input=document.getElementById("feedPostInput"),button=document.getElementById("feedPostButton"),status=document.getElementById("feedStatus");
  const content=input.value.trim();if(!content){status.innerText="Write something before posting.";return}
