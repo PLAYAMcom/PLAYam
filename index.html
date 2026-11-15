@@ -519,23 +519,22 @@ async function loadFeed(){
 }
 async function loadVideos(){
  const scroller=document.getElementById("videosScroller");if(!scroller)return;
- scroller.innerHTML='<div class="videos-empty"><div>…</div><h2>Loading videos</h2><p>Finding the latest PLAYAM clips.</p></div>';
- const {data,error}=await supabaseClient.from("feed_posts").select("id,content,created_at,user_id,media_url,media_type").eq("media_type","video").not("media_url","is",null).order("created_at",{ascending:false}).limit(40);
- if(error){scroller.innerHTML='<div class="videos-empty"><h2>Videos are unavailable</h2><p>'+escapeFeedText(error.message)+'</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div>';return}
- if(!data||!data.length){scroller.innerHTML='<div class="videos-empty"><div>▶</div><h2>Your video feed starts here</h2><p>There are no published videos yet. The full-screen player is ready for approved video posts once secure video uploads are connected.</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div>';return}
- const ids=[...new Set(data.map(p=>p.user_id).filter(Boolean))];let profiles={};
+ scroller.innerHTML='<div class="videos-empty"><div>…</div><h2>Loading videos</h2><p>Finding approved PLAYAM videos.</p></div>';
+ const {data:{user}}=await supabaseClient.auth.getUser();
+ if(!user){scroller.innerHTML='<div class="videos-empty"><h2>Sign in to watch</h2><p>Please sign in to view the PLAYAM video feed.</p></div>';return}
+ const {data,error}=await supabaseClient.functions.invoke("flow-social",{body:{operation:"feed"}});
+ if(error||!data||!Array.isArray(data.posts)){
+  scroller.innerHTML='<div class="videos-empty"><h2>Videos are temporarily unavailable</h2><p>'+escapeFeedText(error?.message||data?.error||"Please try again later.")+'</p><button class="primary" onclick="loadVideos()">TRY AGAIN</button></div>';return;
+ }
+ const posts=data.posts.filter(p=>p.videoUrl);
+ if(!posts.length){
+  scroller.innerHTML='<div class="videos-empty"><div>▶</div><h2>Your video feed starts here</h2><p>There are no approved videos yet. Once creators upload videos and moderation approves them, they will appear here.</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div>';return;
+ }
+ const ids=[...new Set(posts.map(p=>p.creator_auth_user_id).filter(Boolean))];let profiles={};
  if(ids.length){const {data:rows}=await supabaseClient.from("playam_profiles").select("user_id,display_name,username").in("user_id",ids);(rows||[]).forEach(p=>profiles[p.user_id]=p)}
- const [{data:reactions},{data:comments},{data:{user}}]=await Promise.all([
-  supabaseClient.from("feed_reactions").select("post_id,user_id"),
-  supabaseClient.from("feed_comments").select("id,post_id"),
-  supabaseClient.auth.getUser()
- ]);
- const counts={},commentCounts={},liked=new Set();
- (reactions||[]).forEach(r=>{counts[r.post_id]=(counts[r.post_id]||0)+1;if(user&&r.user_id===user.id)liked.add(r.post_id)});
- (comments||[]).forEach(c=>commentCounts[c.post_id]=(commentCounts[c.post_id]||0)+1);
- scroller.innerHTML=data.map(p=>{
-  const profile=profiles[p.user_id]||{},name=profile.display_name||"PLAYAM Player",handle=profile.username?"@"+profile.username:"@playam-player";
-  return '<article class="video-slide" data-video-slide><video src="'+escapeFeedText(p.media_url)+'" playsinline muted loop preload="metadata" controls aria-label="PLAYAM community video"></video><div class="video-shade"></div><div class="video-info"><div class="video-creator">'+escapeFeedText(name)+' <span style="font-weight:400;color:#e3d5b5">'+escapeFeedText(handle)+'</span></div><div class="video-caption">'+escapeFeedText(p.content||"")+'</div></div><div class="video-side-actions"><div><button type="button" aria-label="Like video" onclick="toggleVideoLike(\''+p.id+'\')">'+(liked.has(p.id)?"♥":"♡")+'</button><small>'+(counts[p.id]||0)+'</small></div><div><button type="button" aria-label="Comments" onclick="openVideoComments(\''+p.id+'\')">💬</button><small>'+(commentCounts[p.id]||0)+'</small></div><div><button type="button" aria-label="Share video" onclick="shareVideo(\''+p.id+'\')">↗</button><small>Share</small></div></div><div id="video-comments-'+p.id+'" class="video-comments hidden"></div></article>';
+ scroller.innerHTML=posts.map(p=>{
+  const profile=profiles[p.creator_auth_user_id]||{},name=profile.display_name||"PLAYAM Creator",handle=profile.username?"@"+profile.username:"@playam-creator";
+  return '<article class="video-slide" data-video-slide data-post-id="'+escapeFeedText(p.id)+'"><video src="'+escapeFeedText(p.videoUrl)+'" playsinline muted loop preload="metadata" aria-label="PLAYAM community video"></video><div class="video-shade"></div><div class="video-info"><div class="video-creator">'+escapeFeedText(name)+' <span style="font-weight:400;color:#e3d5b5">'+escapeFeedText(handle)+'</span></div><div class="video-caption">'+escapeFeedText(p.caption||"")+'</div></div><div class="video-side-actions"><div><button type="button" aria-label="Like video" onclick="toggleVideoLike(\''+p.id+'\')">'+(p.likedByMe?"♥":"♡")+'</button><small>'+(p.likedByMe?"Liked":"Like")+'</small></div><div><button type="button" aria-label="Comments" onclick="openVideoComments(\''+p.id+'\')">💬</button><small>Comment</small></div><div><button type="button" aria-label="Share video" onclick="shareVideo(\''+p.id+'\')">↗</button><small>Share</small></div></div><div id="video-comments-'+p.id+'" class="video-comments hidden"></div></article>';
  }).join("");
  const videos=[...scroller.querySelectorAll("video")];
  if("IntersectionObserver" in window){
@@ -545,24 +544,22 @@ async function loadVideos(){
 }
 async function toggleVideoLike(postId){
  const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to like videos.");return}
- const {data:existing,error}=await supabaseClient.from("feed_reactions").select("post_id").eq("post_id",postId).eq("user_id",user.id).maybeSingle();
- if(error){showMessage(error.message);return}
- const result=existing?await supabaseClient.from("feed_reactions").delete().eq("post_id",postId).eq("user_id",user.id):await supabaseClient.from("feed_reactions").insert({post_id:postId,user_id:user.id});
- if(result.error){showMessage(result.error.message);return}await loadVideos();
+ const {data,error}=await supabaseClient.functions.invoke("flow-social",{body:{operation:"like",postId}});
+ if(error||data?.error){showMessage(data?.error||error.message||"Could not update like.");return}
+ await loadVideos();
 }
 async function openVideoComments(postId){
  const box=document.getElementById("video-comments-"+postId);if(!box)return;
  if(!box.classList.contains("hidden")){box.classList.add("hidden");return}
- box.classList.remove("hidden");box.innerHTML='<div class="small">Loading comments…</div>';
- const {data,error}=await supabaseClient.from("feed_comments").select("id,content,created_at").eq("post_id",postId).order("created_at",{ascending:true}).limit(60);
- if(error){box.innerHTML='<div class="small">'+escapeFeedText(error.message)+'</div>';return}
- box.innerHTML='<button class="videos-refresh" style="float:right" onclick="document.getElementById(\'video-comments-'+postId+'\').classList.add(\'hidden\')">✕</button>'+(data||[]).map(c=>'<div style="padding:7px 0;border-bottom:1px solid #393040;font-size:13px">'+escapeFeedText(c.content)+'</div>').join("")+'<div style="display:flex;gap:7px"><input id="video-comment-input-'+postId+'" maxlength="1000" placeholder="Add a comment…"><button class="primary" onclick="addVideoComment(\''+postId+'\')">Send</button></div>';
+ box.classList.remove("hidden");
+ box.innerHTML='<button class="videos-refresh" style="float:right" onclick="document.getElementById(\'video-comments-'+postId+'\').classList.add(\'hidden\')">✕</button><div style="clear:both;padding-top:8px"><div class="small" style="margin-bottom:8px">Join the conversation</div><div style="display:flex;gap:7px"><input id="video-comment-input-'+postId+'" maxlength="1000" placeholder="Add a comment…"><button class="primary" onclick="addVideoComment(\''+postId+'\')">Send</button></div><div class="small" style="margin-top:7px">Comment history will be added to this view in the next backend update.</div></div>';
 }
 async function addVideoComment(postId){
- const input=document.getElementById("video-comment-input-"+postId),content=input?.value.trim();if(!content)return;
+ const input=document.getElementById("video-comment-input-"+postId),body=input?.value.trim();if(!body)return;
  const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to comment.");return}
- const {error}=await supabaseClient.from("feed_comments").insert({post_id:postId,user_id:user.id,content});
- if(error){showMessage(error.message);return}await loadVideos();
+ const {data,error}=await supabaseClient.functions.invoke("flow-social",{body:{operation:"comment",postId,body}});
+ if(error||data?.error){showMessage(data?.error||error.message||"Could not send comment.");return}
+ input.value="";showMessage("Comment posted.");
 }
 async function shareVideo(postId){
  const url=location.href+"#video-"+postId;
