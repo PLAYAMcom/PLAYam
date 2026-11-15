@@ -883,7 +883,7 @@ async function submitChoice(choice){await submitGameAnswer(choice)}
 async function submitWrittenAnswer(){const answer=document.getElementById("answerInput").value.trim();if(!answer){showMessage("Please enter an answer.");return}await submitGameAnswer(answer)}
 async function submitGameAnswer(answer){
  if(answerSubmitted)return;
- const {error}=await supabaseClient.rpc("submit_playam_answer",{p_answer:answer});
+ const {error}=await supabaseClient.rpc("submit_playam_answer",{p_answer:answer,p_code:currentRoomCode});
  if(error){showMessage(error.message);return}
  answerSubmitted=true;showMessage("✓ Answer submitted!");hideGameControls();
  document.getElementById("gameWaiting").classList.remove("hidden");document.getElementById("gameStatus").innerText="Your answer is locked in.";
