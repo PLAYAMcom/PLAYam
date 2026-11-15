@@ -228,6 +228,19 @@ input,select,textarea{background:#15111d;border-color:#4a3d56;color:var(--text)}
    <label>Bio</label><textarea id="profileBio" maxlength="300" placeholder="Tell the PLAYAM community about yourself..."></textarea>
    <button class="primary" onclick="saveProfile()">SAVE PROFILE</button>
    <div id="profileStatus" class="small"></div>
+   <section class="small-card" id="creatorEarningsPanel" style="margin-top:18px">
+    <h3>💰 Creator Earnings</h3>
+    <p class="muted">Your video performance and creator cash balance.</p>
+    <div class="grid-two" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+     <div class="small-card"><div class="muted small">Qualified video views · 30 days</div><strong id="creatorQualifiedViews">—</strong></div>
+     <div class="small-card"><div class="muted small">Likes</div><strong id="creatorVideoLikes">—</strong><div class="muted small">Likes help engagement; they are not paid views.</div></div>
+     <div class="small-card"><div class="muted small">Pending earnings</div><strong id="creatorPendingBalance">₦0.00</strong></div>
+     <div class="small-card"><div class="muted small">Available earnings</div><strong id="creatorAvailableBalance">₦0.00</strong></div>
+    </div>
+    <p class="small muted" id="creatorRewardNotice">Loading creator earnings...</p>
+    <h4>Recent video rewards</h4>
+    <div id="creatorRewardHistory" class="small muted">Loading reward history...</div>
+   </section>
   </section>
 
   <section id="feedScreen" class="hidden">
@@ -452,7 +465,34 @@ async function loadProfile(){
  if(error){status.innerText=error.message;return}
  const display=data?.display_name||user.email.split("@")[0],username=data?.username||("player_"+user.id.slice(0,8)),bio=data?.bio||"";
  document.getElementById("profileDisplayName").value=display;document.getElementById("profileUsername").value=username;document.getElementById("profileBio").value=bio;
- document.getElementById("profilePreviewName").innerText=display;document.getElementById("profilePreviewHandle").innerText="@"+username;document.getElementById("profileAvatar").innerText=(display[0]||"P").toUpperCase();status.innerText="";
+ document.getElementById("profilePreviewName").innerText=display;document.getElementById("profilePreviewHandle").innerText="@"+username;document.getElementById("profileAvatar").innerText=(display[0]||"P").toUpperCase();status.innerText="";loadCreatorEarningsDashboard();
+}
+async function loadCreatorEarningsDashboard(){
+ const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+ const money=(minor)=>"₦"+(Number(minor||0)/100).toLocaleString("en-NG",{minimumFractionDigits:2,maximumFractionDigits:2});
+ set("creatorQualifiedViews","—");set("creatorVideoLikes","—");
+ set("creatorPendingBalance","₦0.00");set("creatorAvailableBalance","₦0.00");
+ set("creatorRewardNotice","Loading creator earnings...");
+ const history=document.getElementById("creatorRewardHistory");if(history)history.textContent="Loading reward history...";
+ const {data,error}=await supabaseClient.functions.invoke("flow-creator-stats",{body:{}});
+ if(error||!data){set("creatorRewardNotice","Creator earnings could not be loaded. Please try again later.");if(history)history.textContent="Reward history unavailable.";return}
+ set("creatorQualifiedViews",Number(data.qualifiedViewsLast30Days||0).toLocaleString("en-NG"));
+ set("creatorVideoLikes",Number(data.likes||0).toLocaleString("en-NG"));
+ set("creatorPendingBalance",money(data.creatorEarnings?.pendingMinor));
+ set("creatorAvailableBalance",money(data.creatorEarnings?.availableMinor));
+ const policy=data.rewardPolicy||{};
+ set("creatorRewardNotice",policy.enabled?"Video reward policy is active. Rewards remain subject to eligibility, funding and administrator approval.":"Video cash rewards are not enabled yet. Your qualified views are tracked, but views and likes do not currently generate cash payments.");
+ if(history){
+  history.replaceChildren();
+  const rows=data.recentVideoRewards||[];
+  if(!rows.length){history.textContent="No video rewards recorded yet.";return}
+  rows.forEach(row=>{
+   const item=document.createElement("div");item.className="small-card";item.style.marginTop="8px";
+   const title=document.createElement("strong");title.textContent=money(row.amountMinor)+" · "+String(row.status||"").replaceAll("_"," ");
+   const detail=document.createElement("div");detail.className="muted small";detail.textContent=Number(row.qualifiedViews||0).toLocaleString("en-NG")+" qualified views";
+   item.append(title,detail);history.append(item);
+  });
+ }
 }
 async function saveProfile(){
  const status=document.getElementById("profileStatus"),display_name=document.getElementById("profileDisplayName").value.trim(),username=document.getElementById("profileUsername").value.trim().toLowerCase(),bio=document.getElementById("profileBio").value.trim();
