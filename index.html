@@ -561,9 +561,26 @@ async function loadVideos(){
  }).join("");
  const videos=[...scroller.querySelectorAll("video")];
  if("IntersectionObserver" in window){
-  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{const v=entry.target;if(entry.isIntersecting&&entry.intersectionRatio>.65){videos.forEach(other=>{if(other!==v)other.pause()});v.play().catch(()=>{})}else v.pause()}),{root:scroller,threshold:[.2,.65,.9]});
+  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{const v=entry.target,slide=v.closest("[data-post-id]"),postId=slide?.dataset.postId;if(entry.isIntersecting&&entry.intersectionRatio>.65){videos.forEach(other=>{if(other!==v)other.pause()});v.play().catch(()=>{});if(postId)startQualifiedVideoView(postId)}else{v.pause();if(postId)finishQualifiedVideoView(postId)}}),{root:scroller,threshold:[.2,.65,.9]});
   videos.forEach(v=>observer.observe(v));
  }
+}
+const playamActiveVideoViews=new Map();
+async function startQualifiedVideoView(postId){
+ if(playamActiveVideoViews.has(postId))return;
+ playamActiveVideoViews.set(postId,{loading:true});
+ const {data,error}=await supabaseClient.functions.invoke("flow-view-events",{body:{operation:"start",postId}});
+ if(error||!data?.eventId){playamActiveVideoViews.delete(postId);return}
+ const current=playamActiveVideoViews.get(postId);
+ if(!current){await supabaseClient.functions.invoke("flow-view-events",{body:{operation:"finish",postId,eventId:data.eventId}});return}
+ playamActiveVideoViews.set(postId,{eventId:data.eventId});
+}
+async function finishQualifiedVideoView(postId){
+ const current=playamActiveVideoViews.get(postId);if(!current)return;
+ playamActiveVideoViews.delete(postId);
+ if(!current.eventId)return;
+ const {data,error}=await supabaseClient.functions.invoke("flow-view-events",{body:{operation:"finish",postId,eventId:current.eventId}});
+ if(!error&&data?.qualified)console.debug("PLAYAM qualified view recorded",postId);
 }
 async function toggleVideoLike(postId){
  const {data:{user}}=await supabaseClient.auth.getUser();if(!user){showMessage("Please log in to like videos.");return}
