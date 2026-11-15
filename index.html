@@ -526,7 +526,11 @@ async function loadVideos(){
  if(error||!data||!Array.isArray(data.posts)){
   scroller.innerHTML='<div class="videos-empty"><h2>Videos are temporarily unavailable</h2><p>'+escapeFeedText(error?.message||data?.error||"Please try again later.")+'</p><button class="primary" onclick="loadVideos()">TRY AGAIN</button></div>';return;
  }
- const posts=data.posts.filter(p=>p.videoUrl);
+ const posts=(await Promise.all(data.posts.map(async p=>{
+  const {data:playback,error:playbackError}=await supabaseClient.functions.invoke("flow-cloudflare-playback",{body:{postId:p.id}});
+  if(playbackError||!playback?.hlsUrl)return null;
+  return {...p,videoUrl:playback.hlsUrl};
+ }))).filter(Boolean);
  if(!posts.length){
   scroller.innerHTML='<div class="videos-empty"><div>▶</div><h2>Your video feed starts here</h2><p>There are no approved videos yet. Once creators upload videos and moderation approves them, they will appear here.</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div>';return;
  }
