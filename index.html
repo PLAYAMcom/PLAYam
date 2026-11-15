@@ -65,7 +65,7 @@ label{display:block;margin-top:13px;font-weight:bold}
 .vote-player.selected{background:#914bd5}
 .waiting-box{padding:22px;text-align:center;background:#101020;border-radius:15px}
 .game-status,.lobby-info{text-align:center;color:var(--muted);margin:12px}
-.feed-shell{max-width:820px;margin:auto}.feed-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 18px}.feed-tab{white-space:nowrap;background:#24243d;color:#d9d9ec;border:1px solid #393957;padding:10px 14px}.feed-tab.active{background:linear-gradient(100deg,var(--purple),var(--pink));color:#fff;border-color:transparent}.feed-composer{background:var(--panel);border:1px solid #34304f;border-radius:22px;padding:18px;margin-bottom:18px}.feed-compose-row{display:flex;gap:12px;align-items:flex-start}.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--purple),var(--pink));font-weight:900;flex:0 0 auto}.feed-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.feed-tool{padding:9px 11px;font-size:13px;background:#25253e;color:#ddd}.feed-post{background:var(--panel);border:1px solid #34304f;border-radius:22px;padding:18px;margin:14px 0}.feed-post-header{display:flex;justify-content:space-between;gap:12px;align-items:center}.feed-author-wrap{display:flex;gap:10px;align-items:center}.feed-author{font-weight:800}.feed-handle{font-size:12px;color:var(--muted)}.feed-time{font-size:12px;color:var(--muted)}.feed-content{white-space:pre-wrap;line-height:1.6;margin:15px 0}.feed-media-placeholder{min-height:240px;border-radius:16px;background:linear-gradient(135deg,#27204a,#16233d);display:flex;align-items:end;padding:18px;font-weight:800;margin:14px 0;color:#e8e2ff}.feed-actions{display:flex;gap:8px;border-top:1px solid #303047;padding-top:12px}.feed-action{padding:9px 13px;font-size:13px;background:transparent;color:#d7d7e8}.feed-action:hover{background:#292943}.feed-empty{padding:30px;text-align:center;color:var(--muted);background:#101020;border-radius:15px}.trend-card{background:linear-gradient(135deg,#1c1933,#151528);border:1px solid #34304f;border-radius:20px;padding:17px;margin-bottom:16px}.trend-item{padding:11px 0;border-bottom:1px solid #2c2c43}.trend-item:last-child{border-bottom:0}.mobile-menu{display:none;background:#22223a;color:white}
+.feed-shell{max-width:820px;margin:auto}.feed-tabs{display:flex;gap:8px;overflow-x:auto;margin:0 0 18px}.feed-tab{white-space:nowrap;background:#24243d;color:#d9d9ec;border:1px solid #393957;padding:10px 14px}.feed-tab.active{background:linear-gradient(100deg,var(--purple),var(--pink));color:#fff;border-color:transparent}.feed-composer{background:var(--panel);border:1px solid #34304f;border-radius:22px;padding:18px;margin-bottom:18px}.feed-compose-row{display:flex;gap:12px;align-items:flex-start}.avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--purple),var(--pink));font-weight:900;flex:0 0 auto}.feed-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.feed-tool{padding:9px 11px;font-size:13px;background:#25253e;color:#ddd}.feed-post{background:var(--panel);border:1px solid #34304f;border-radius:22px;padding:18px;margin:14px 0}.feed-post-header{display:flex;justify-content:space-between;gap:12px;align-items:center}.feed-author-wrap{display:flex;gap:10px;align-items:center}.feed-author{font-weight:800}.feed-handle{font-size:12px;color:var(--muted)}.feed-time{font-size:12px;color:var(--muted)}.feed-content{white-space:pre-wrap;line-height:1.6;margin:15px 0}.feed-media{width:100%;max-height:520px;object-fit:cover;border-radius:16px;margin:14px 0;border:1px solid #34304f}.feed-media-placeholder{min-height:240px;border-radius:16px;background:linear-gradient(135deg,#27204a,#16233d);display:flex;align-items:end;padding:18px;font-weight:800;margin:14px 0;color:#e8e2ff}.feed-actions{display:flex;gap:8px;border-top:1px solid #303047;padding-top:12px}.feed-action{padding:9px 13px;font-size:13px;background:transparent;color:#d7d7e8}.feed-action:hover{background:#292943}.feed-empty{padding:30px;text-align:center;color:var(--muted);background:#101020;border-radius:15px}.trend-card{background:linear-gradient(135deg,#1c1933,#151528);border:1px solid #34304f;border-radius:20px;padding:17px;margin-bottom:16px}.trend-item{padding:11px 0;border-bottom:1px solid #2c2c43}.trend-item:last-child{border-bottom:0}.mobile-menu{display:none;background:#22223a;color:white}
 @media(max-width:760px){
  #app{display:block}
  .sidebar{width:100%;height:auto;padding:12px;display:flex;flex-direction:row;align-items:center;overflow-x:auto;border-right:0;border-bottom:1px solid #292943}
@@ -192,9 +192,9 @@ label{display:block;margin-top:13px;font-weight:bold}
       </div>
      </div>
      <div class="feed-tools">
-      <button class="feed-tool" type="button" disabled title="Media uploads are being connected securely">📸 Photo soon</button>
-      <button class="feed-tool" type="button" disabled title="Video uploads are being connected securely">🎥 Video soon</button>
-      <span class="small">Text posts are live now. Photo and video uploads require secure storage and moderation before release.</span>
+      <label class="feed-tool" for="feedImageInput">📸 Add photo<input id="feedImageInput" type="file" accept="image/jpeg,image/png,image/webp" style="display:none"></label>
+      <button class="feed-tool" type="button" disabled title="Video requires processing and moderation before release">🎥 Video coming next</button>
+      <span class="small">Photos are limited to JPG, PNG or WebP. Videos remain disabled until secure processing and moderation are ready.</span>
      </div>
      <button id="feedPostButton" class="primary" style="width:100%;margin-top:10px" onclick="createFeedPost()">POST TO FEED</button>
     </div>
@@ -451,9 +451,21 @@ async function createFeedPost(){
  const content=input.value.trim();if(!content){status.innerText="Write something before posting.";return}
  button.disabled=true;status.innerText="Posting...";
  const {data:{user}}=await supabaseClient.auth.getUser();if(!user){button.disabled=false;status.innerText="Please log in before posting.";return}
- const {error}=await supabaseClient.from("feed_posts").insert({content,user_id:user.id});
- button.disabled=false;if(error){status.innerText="Unable to post: "+error.message;return}
- input.value="";status.innerText="✓ Posted to PLAYAM Feed!";await loadFeed();
+ const image=document.getElementById("feedImageInput")?.files?.[0];let media_url=null,media_type=null;
+ try{
+  if(image){
+   if(image.size>5*1024*1024)throw new Error("Photo must be 5MB or smaller.");
+   const ext=(image.name.split(".").pop()||"jpg").toLowerCase(),path=user.id+"/"+crypto.randomUUID()+"."+ext;
+   status.innerText="Uploading photo...";
+   const {error:uploadError}=await supabaseClient.storage.from("feed-media").upload(path,image,{upsert:false,contentType:image.type});
+   if(uploadError)throw uploadError;
+   const {data:urlData}=supabaseClient.storage.from("feed-media").getPublicUrl(path);media_url=urlData.publicUrl;media_type="image";
+  }
+  const {error}=await supabaseClient.from("feed_posts").insert({content,user_id:user.id,media_url,media_type});
+  if(error)throw error;
+  input.value="";const fi=document.getElementById("feedImageInput");if(fi)fi.value="";status.innerText="✓ Posted to PLAYAM Feed!";await loadFeed();
+ }catch(error){status.innerText="Unable to post: "+error.message}
+ finally{button.disabled=false}
 }
 
 /* SOLO */
