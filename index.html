@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PLAYAM 🎮</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4/dist/tus.min.js"></script>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#171321;--panel:#211b2b;--panel2:#2b2338;--purple:#512B81;--pink:#C6A15B;--gold:#C6A15B;--blue:#7656a8;--text:#F4F0F8;--muted:#b9b0c5}
@@ -268,7 +269,7 @@ input,select,textarea{background:#15111d;border-color:#4a3d56;color:var(--text)}
   </section>
 
   <section id="videosScreen" class="videos-screen hidden" aria-label="PLAYAM vertical videos">
-   <header class="videos-topbar"><button class="videos-back" onclick="showFeed()" aria-label="Back to Feed">←</button><div><strong>PLAYAM</strong><span>VIDEOS</span></div><button class="videos-refresh" onclick="loadVideos()">↻</button></header>
+   <header class="videos-topbar"><button class="videos-back" onclick="showFeed()" aria-label="Back to Feed">←</button><div><strong>PLAYAM</strong><span>VIDEOS</span></div><div style="display:flex;gap:6px;align-items:center"><button class="videos-refresh" onclick="document.getElementById('playamVideoFile').click()" aria-label="Upload video">＋</button><button class="videos-refresh" onclick="loadVideos()" aria-label="Refresh videos">↻</button></div><input id="playamVideoFile" type="file" accept="video/mp4,video/quicktime,video/webm" hidden onchange="beginPlayamVideoUpload(this)"></header><div id="playamUploadStatus" class="small" role="status" style="padding:6px 14px;text-align:center"></div>
    <div id="videosScroller" class="videos-scroller"><div class="videos-empty"><div>▶</div><h2>Your video feed starts here</h2><p>Vertical community videos will appear here when creators can securely upload them.</p><button class="primary" onclick="showFeed()">BACK TO FEED</button></div></div>
    <div class="videos-bottom-hint">Swipe up for the next video</div>
   </section>
@@ -516,6 +517,24 @@ async function loadFeed(){
  (reactionRows||[]).forEach(r=>{reactionMap[r.post_id]=(reactionMap[r.post_id]||0)+1;if(user&&r.user_id===user.id)liked.add(r.post_id)});
  (commentRows||[]).forEach(c=>commentMap[c.post_id]=(commentMap[c.post_id]||0)+1);
  list.innerHTML=data.map((p,i)=>{const profile=profileMap[p.user_id]||{};const display=profile.display_name||"PLAYAM Player";const handle=profile.username?"@"+profile.username:"@playam-player";const avatar=profile.avatar_url?'<img class="avatar" src="'+escapeFeedText(profile.avatar_url)+'" alt="" style="object-fit:cover">':'<div class="avatar">'+escapeFeedText((display[0]||"P").toUpperCase())+'</div>';const media=p.media_type==="image"&&p.media_url?'<img class="feed-media" src="'+escapeFeedText(p.media_url)+'" alt="Post photo" loading="lazy">':p.media_type==="video"&&p.media_url?'<video class="feed-post-video" src="'+escapeFeedText(p.media_url)+'" controls playsinline preload="metadata">Your browser does not support video playback.</video>':"";return '<article class="feed-post"><div class="feed-post-header"><div class="feed-author-wrap">'+avatar+'<div><div class="feed-author">'+escapeFeedText(display)+'</div><div class="feed-handle">'+escapeFeedText(handle)+'</div></div></div><div class="feed-time">'+escapeFeedText(formatFeedTime(p.created_at))+'</div></div><div class="feed-content">'+escapeFeedText(p.content)+'</div>'+media+'<div class="feed-actions"><button class="feed-action" type="button" onclick="toggleFeedLike(\''+p.id+'\')">'+(liked.has(p.id)?"♥":"♡")+" "+(reactionMap[p.id]||0)+'</button><button class="feed-action" type="button" onclick="openFeedComments(\''+p.id+'\')">💬 '+(commentMap[p.id]||0)+'</button><button class="feed-action" type="button" onclick="shareFeedPost()">↗ Share</button></div><div id="comments-'+p.id+'" class="hidden" style="margin-top:12px"></div></article>'}).join("");
+}
+async function beginPlayamVideoUpload(input){
+ const file=input?.files?.[0];if(!file)return;
+ const status=document.getElementById('playamUploadStatus');
+ const setStatus=t=>{if(status)status.textContent=t};
+ if(!window.tus?.Upload){setStatus('Secure upload component did not load. Please refresh and try again.');input.value='';return}
+ if(file.size>104857600){setStatus('Videos must be 100 MB or smaller.');input.value='';return}
+ if(!['video/mp4','video/quicktime','video/webm'].includes(file.type)){setStatus('Please choose an MP4, MOV or WebM video.');input.value='';return}
+ const caption=window.prompt('Add a caption for your video (optional):')||'';
+ if(caption.length>2200){setStatus('Caption must be 2,200 characters or fewer.');input.value='';return}
+ setStatus('Preparing your secure upload…');
+ const {data:{session}}=await supabaseClient.auth.getSession();
+ if(!session){setStatus('Please sign in before uploading.');input.value='';return}
+ const {data:prepared,error}=await supabaseClient.functions.invoke('flow-cloudflare-create-upload',{body:{mimeType:file.type,fileSize:file.size,caption}});
+ if(error||!prepared?.tusUploadUrl){setStatus(prepared?.error||error?.message||'Could not prepare upload. Cloudflare may not be configured yet.');input.value='';return}
+ setStatus('Uploading video… 0%');
+ const upload=new tus.Upload(file,{uploadUrl:prepared.tusUploadUrl,chunkSize:8*1024*1024,retryDelays:[0,1000,3000,5000,10000],metadata:{filename:file.name,filetype:file.type},onError(err){setStatus('Upload failed: '+(err?.message||'Please try again.'))},onProgress(bytesSent,bytesTotal){setStatus('Uploading video… '+Math.floor(bytesSent/bytesTotal*100)+'%')},onSuccess(){setStatus('Upload complete. PLAYAM is processing your video; it will appear after processing and administrator approval.');input.value='';}});
+ upload.start();
 }
 async function loadVideos(){
  const scroller=document.getElementById("videosScroller");if(!scroller)return;
