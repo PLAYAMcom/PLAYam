@@ -469,7 +469,7 @@ const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentRoomCode="",currentRoomId="",currentPlayerId="",currentNickname="";
 let currentPlayerReady=false,currentPlayerIsHost=false,currentGame="",currentRoundId="";
 let selectedVotePlayerId="",lobbyRefreshTimer=null,lobbyLoading=false;
-let gameRefreshTimer=null,gameTimerInterval=null,currentRoundEndsAt=null,answerSubmitted=false;
+let gameRefreshTimer=null,gameTimerInterval=null,currentRoundEndsAt=null,answerSubmitted=false,roundAdvanceInFlight=false;
 let soloQuestions=[],soloAnswers=[],soloQuestionIndex=0,soloDifficulty="starter",soloLoading=false;
 
 const screenIds=["homeScreen","feedScreen","videosScreen","profileScreen","findPlayerScreen","settingsScreen","soloSetupScreen","soloGameScreen","soloResultsScreen","createScreen","joinScreen","lobbyScreen","gameScreen","resultsScreen"];
@@ -854,7 +854,16 @@ async function loadGame(){
  document.getElementById("gameName").innerText=getGameTitle(room.game);
  document.getElementById("gameRoundNumber").innerText="Round "+room.current_round+" of "+room.rounds;
  document.getElementById("questionBox").innerText=round.questions.text;
- currentRoundEndsAt=round.ends_at;startRoundTimer();await renderGameControls(round,room);
+ currentRoundEndsAt=round.ends_at;startRoundTimer();
+ if(Date.now()>=new Date(round.ends_at).getTime()&&!roundAdvanceInFlight){
+  roundAdvanceInFlight=true;
+  try{
+   const {data:advanceResult,error:advanceError}=await supabaseClient.rpc("advance_playam_round",{p_code:currentRoomCode});
+   if(advanceError){console.error("PLAYAM round advancement:",advanceError.message)}
+   else if(["advanced","finished","finished_no_more_questions"].includes(advanceResult)){await loadGame();return}
+  }finally{roundAdvanceInFlight=false}
+ }
+ await renderGameControls(round,room);
 }
 function getGameTitle(g){return({"friendship-court":"⚖️ Friendship Court","would-you-rather":"🤔 Would You Rather?","truth-or-dare":"🎭 Truth or Dare","mind-battle":"🧠 Mind Battle","secret-confessions":"🤫 Secret Confessions"})[g]||"PLAYAM"}
 function hideGameControls(){["choiceArea","answerArea","voteArea","gameWaiting"].forEach(id=>document.getElementById(id).classList.add("hidden"))}
