@@ -65,7 +65,7 @@ label{display:block;margin-top:13px;font-weight:bold}
 .vote-player.selected{background:#914bd5}
 .waiting-box{padding:22px;text-align:center;background:#101020;border-radius:15px}
 .game-status,.lobby-info{text-align:center;color:var(--muted);margin:12px}
-.mobile-menu{display:none;background:#22223a;color:white}
+.feed-composer{background:var(--panel);border:1px solid #34304f;border-radius:20px;padding:20px;margin-bottom:18px}.feed-post{background:var(--panel);border:1px solid #34304f;border-radius:18px;padding:20px;margin:12px 0}.feed-post-header{display:flex;justify-content:space-between;gap:12px;align-items:center}.feed-author{font-weight:800}.feed-time{font-size:12px;color:var(--muted)}.feed-content{white-space:pre-wrap;line-height:1.55;margin:14px 0}.feed-actions{display:flex;gap:10px}.feed-action{padding:9px 13px;font-size:13px;background:#292943;color:white}.feed-empty{padding:30px;text-align:center;color:var(--muted);background:#101020;border-radius:15px}.mobile-menu{display:none;background:#22223a;color:white}
 @media(max-width:760px){
  #app{display:block}
  .sidebar{width:100%;height:auto;padding:12px;display:flex;flex-direction:row;align-items:center;overflow-x:auto;border-right:0;border-bottom:1px solid #292943}
@@ -99,6 +99,7 @@ label{display:block;margin-top:13px;font-weight:bold}
   <div class="brand">PLAYAM 🎮</div>
   <div class="side-label">MAIN MENU</div>
   <button class="navbtn active" id="navHome" onclick="showHome()">🏠 Home</button>
+  <button class="navbtn" id="navFeed" onclick="showFeed()">📰 Feed</button>
   <button class="navbtn" onclick="showSoloSetup()">🎯 Play Solo</button>
   <button class="navbtn" onclick="showFindPlayer()">👥 Find Player</button>
   <button class="navbtn" onclick="showCreateRoom()">➕ Create Room</button>
@@ -123,6 +124,11 @@ label{display:block;margin-top:13px;font-weight:bold}
    <div class="hero">
     <h2>Ready for your next challenge?</h2>
     <p>Choose your game, challenge your mind and make every round count.</p>
+   </div>
+   <div class="small-card" style="margin-bottom:18px">
+    <h3>📰 PLAYAM Feed</h3>
+    <p class="muted">Share updates and see what the PLAYAM community is talking about.</p>
+    <button class="secondary" style="width:100%" onclick="showFeed()">OPEN FEED</button>
    </div>
    <h3 class="section-title">Choose how you want to play</h3>
    <div class="game-grid">
@@ -157,6 +163,21 @@ label{display:block;margin-top:13px;font-weight:bold}
     <strong>⚖️ Friendship Court</strong>
     <p class="muted">Your first PLAYAM experience. More game modes will unlock as the platform grows.</p>
    </div>
+  </section>
+
+  <section id="feedScreen" class="hidden">
+   <div class="hero">
+    <h2>📰 PLAYAM Feed</h2>
+    <p>Share a thought, celebrate a win, and connect with the PLAYAM community.</p>
+   </div>
+   <div class="feed-composer">
+    <label for="feedPostInput">What's happening on PLAYAM?</label>
+    <textarea id="feedPostInput" maxlength="1000" placeholder="Share an update..."></textarea>
+    <div class="small">Maximum 1,000 characters.</div>
+    <button id="feedPostButton" class="primary" style="width:100%;margin-top:10px" onclick="createFeedPost()">POST TO FEED</button>
+   </div>
+   <div id="feedStatus" class="small"></div>
+   <div id="feedList" aria-live="polite"></div>
   </section>
 
   <section id="findPlayerScreen" class="screen-card hidden">
@@ -322,13 +343,14 @@ let selectedVotePlayerId="",lobbyRefreshTimer=null,lobbyLoading=false;
 let gameRefreshTimer=null,gameTimerInterval=null,currentRoundEndsAt=null,answerSubmitted=false;
 let soloQuestions=[],soloAnswers=[],soloQuestionIndex=0,soloDifficulty="starter",soloLoading=false;
 
-const screenIds=["homeScreen","findPlayerScreen","settingsScreen","soloSetupScreen","soloGameScreen","soloResultsScreen","createScreen","joinScreen","lobbyScreen","gameScreen","resultsScreen"];
+const screenIds=["homeScreen","feedScreen","findPlayerScreen","settingsScreen","soloSetupScreen","soloGameScreen","soloResultsScreen","createScreen","joinScreen","lobbyScreen","gameScreen","resultsScreen"];
 
 function showMessage(t){document.getElementById("message").innerText=t||""}
 function hideScreens(){screenIds.forEach(id=>document.getElementById(id).classList.add("hidden"))}
 function setNav(id){document.querySelectorAll(".navbtn").forEach(b=>b.classList.remove("active"));if(id)document.getElementById(id)?.classList.add("active")}
 function showScreen(id,nav=""){hideScreens();document.getElementById(id).classList.remove("hidden");setNav(nav);showMessage("")}
 function showHome(){stopLobbyRefresh();stopGameRefresh();showScreen("homeScreen","navHome")}
+function showFeed(){stopLobbyRefresh();stopGameRefresh();showScreen("feedScreen","navFeed");loadFeed()}
 function showFindPlayer(){stopLobbyRefresh();stopGameRefresh();showScreen("findPlayerScreen")}
 function showSettings(){showScreen("settingsScreen")}
 function showCreateRoom(){showScreen("createScreen")}
@@ -356,6 +378,27 @@ async function signOut(){
  stopLobbyRefresh();stopGameRefresh();await supabaseClient.auth.signOut();
  resetGameState();resetSoloGame();document.getElementById("app").classList.add("hidden");
  document.getElementById("authScreen").classList.remove("hidden");showMessage("You have logged out.");
+}
+
+/* FEED */
+function escapeFeedText(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function formatFeedTime(value){const d=new Date(value);if(Number.isNaN(d.getTime()))return "";const sec=Math.max(0,Math.floor((Date.now()-d.getTime())/1000));if(sec<60)return "Just now";if(sec<3600)return Math.floor(sec/60)+"m ago";if(sec<86400)return Math.floor(sec/3600)+"h ago";return d.toLocaleDateString()}
+async function loadFeed(){
+ const list=document.getElementById("feedList"),status=document.getElementById("feedStatus");
+ list.innerHTML='<div class="feed-empty">Loading the PLAYAM Feed...</div>';status.innerText="";
+ const {data,error}=await supabaseClient.from("feed_posts").select("id,content,created_at,user_id").order("created_at",{ascending:false}).limit(50);
+ if(error){list.innerHTML='<div class="feed-empty">The Feed is not available yet. '+escapeFeedText(error.message)+'</div>';return}
+ if(!data||!data.length){list.innerHTML='<div class="feed-empty">No posts yet. Be the first to post on PLAYAM! 🎉</div>';return}
+ list.innerHTML=data.map(p=>'<article class="feed-post"><div class="feed-post-header"><div class="feed-author">PLAYAM Player</div><div class="feed-time">'+escapeFeedText(formatFeedTime(p.created_at))+'</div></div><div class="feed-content">'+escapeFeedText(p.content)+'</div><div class="feed-actions"><button class="feed-action" disabled>♡ Likes coming soon</button><button class="feed-action" disabled>💬 Comments coming soon</button></div></article>').join("");
+}
+async function createFeedPost(){
+ const input=document.getElementById("feedPostInput"),button=document.getElementById("feedPostButton"),status=document.getElementById("feedStatus");
+ const content=input.value.trim();if(!content){status.innerText="Write something before posting.";return}
+ button.disabled=true;status.innerText="Posting...";
+ const {data:{user}}=await supabaseClient.auth.getUser();if(!user){button.disabled=false;status.innerText="Please log in before posting.";return}
+ const {error}=await supabaseClient.from("feed_posts").insert({content,user_id:user.id});
+ button.disabled=false;if(error){status.innerText="Unable to post: "+error.message;return}
+ input.value="";status.innerText="✓ Posted to PLAYAM Feed!";await loadFeed();
 }
 
 /* SOLO */
